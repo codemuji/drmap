@@ -614,6 +614,20 @@ try {
         // GEOLOCATION TRACKING & DISTANCE CALCULATION
         // ============================================
         let userCoords = null;
+        const dbCitiesList = <?php echo json_encode($allCities); ?>;
+
+        const knownCityCoords = {
+            'guwahati': { lat: 26.1445, lng: 91.7362 },
+            'tezpur': { lat: 26.6338, lng: 92.8000 },
+            'dibrugarh': { lat: 27.4728, lng: 94.9120 },
+            'kolkata': { lat: 22.5726, lng: 88.3639 },
+            'delhi': { lat: 28.6139, lng: 77.2090 },
+            'nagaon': { lat: 26.3462, lng: 92.6840 },
+            'silchar': { lat: 24.8333, lng: 92.7789 },
+            'jorhat': { lat: 26.7509, lng: 94.2037 },
+            'bongaigaon': { lat: 26.4769, lng: 90.5583 },
+            'tinsukia': { lat: 27.4922, lng: 95.3558 }
+        };
 
         function getDistanceKm(lat1, lon1, lat2, lon2) {
             const R = 6371; // Radius of Earth in km
@@ -642,6 +656,53 @@ try {
             return minD;
         }
 
+        // Find the closest DB city for user's GPS coordinates
+        function findClosestDbCity(uLat, uLng, addressData = {}) {
+            const fullStr = ((addressData.display_name || '') + ' ' + JSON.stringify(addressData.address || '')).toLowerCase();
+
+            // 1. Check direct string match in reverse geocoded address
+            for (let city of dbCitiesList) {
+                const cLower = city.toLowerCase().trim();
+                if (cLower && fullStr.includes(cLower)) {
+                    return { city: city, method: 'name', distanceKm: 0 };
+                }
+            }
+
+            // 2. Check closest doctor clinic GPS location
+            let closestCity = '';
+            let minDistance = 99999;
+
+            allDoctors.forEach(doc => {
+                if (doc.practice_city && doc.locations && Array.isArray(doc.locations)) {
+                    doc.locations.forEach(loc => {
+                        const dLat = parseFloat(loc.lat);
+                        const dLng = parseFloat(loc.lng);
+                        if (!isNaN(dLat) && !isNaN(dLng)) {
+                            const dist = getDistanceKm(uLat, uLng, dLat, dLng);
+                            if (dist < minDistance) {
+                                minDistance = dist;
+                                closestCity = doc.practice_city;
+                            }
+                        }
+                    });
+                }
+            });
+
+            // 3. Check preset city center coordinates fallback
+            for (let city of dbCitiesList) {
+                const key = city.toLowerCase().trim();
+                if (knownCityCoords[key]) {
+                    const dist = getDistanceKm(uLat, uLng, knownCityCoords[key].lat, knownCityCoords[key].lng);
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        closestCity = city;
+                    }
+                }
+            }
+
+            return { city: closestCity, method: 'distance', distanceKm: minDistance };
+        }
+
         // Request Browser Location Permission & Track Coords
         function requestUserLocation(userTriggered = false) {
             const badge = document.getElementById('geo-location-badge');
@@ -668,37 +729,32 @@ try {
                     fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
                         .then(res => res.json())
                         .then(data => {
-                            const addr = data.address || {};
-                            const detectedCity = addr.city || addr.town || addr.village || addr.county || addr.state_district || '';
-                            
-                            let matchedCity = '';
-                            if (detectedCity && cityFilter) {
-                                for (let option of cityFilter.options) {
-                                    if (option.value.toLowerCase() === detectedCity.toLowerCase() || 
-                                        detectedCity.toLowerCase().includes(option.value.toLowerCase()) || 
-                                        option.value.toLowerCase().includes(detectedCity.toLowerCase())) {
-                                        matchedCity = option.value;
-                                        break;
-                                    }
-                                }
-                            }
+                            const match = findClosestDbCity(lat, lng, data);
 
-                            if (matchedCity) {
-                                cityFilter.value = matchedCity;
+                            if (match.city && cityFilter) {
+                                cityFilter.value = match.city;
                                 if (statusText) {
-                                    statusText.innerHTML = `📍 <strong>Auto-detected city:</strong> ${matchedCity} — Filtered nearby doctors`;
+                                    if (match.distanceKm > 0 && match.distanceKm < 999) {
+                                        statusText.innerHTML = `📍 <strong>Auto-matched nearby city:</strong> ${match.city} (~${match.distanceKm.toFixed(1)} km away) — Filtered nearby doctors`;
+                                    } else {
+                                        statusText.innerHTML = `📍 <strong>Auto-detected city:</strong> ${match.city} — Filtered nearby doctors`;
+                                    }
                                 }
                             } else {
                                 if (statusText) {
-                                    statusText.innerHTML = `📍 <strong>Current Location:</strong> ${detectedCity || 'Coordinates acquired'} — Sorting doctors by closest GPS distance`;
+                                    statusText.innerHTML = `📍 <strong>Current Location:</strong> (${lat.toFixed(4)}, ${lng.toFixed(4)}) — Sorting doctors by closest distance`;
                                 }
                             }
 
                             filterDoctors();
                         })
                         .catch(() => {
-                            if (statusText) {
-                                statusText.innerHTML = `📍 <strong>Location Acquired:</strong> (${lat.toFixed(4)}, ${lng.toFixed(4)}) — Sorting doctors by distance`;
+                            const match = findClosestDbCity(lat, lng, {});
+                            if (match.city && cityFilter) {
+                                cityFilter.value = match.city;
+                                if (statusText) {
+                                    statusText.innerHTML = `📍 <strong>Auto-matched city:</strong> ${match.city} — Filtered nearby doctors`;
+                                }
                             }
                             filterDoctors();
                         });
