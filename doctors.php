@@ -159,22 +159,22 @@ try {
         </header>
 
         <!-- Hero Section -->
-        <section class="light-teal-bg pt-32 pb-20 px-4 md:px-6 relative overflow-hidden" style="min-height: 60vh">
+        <section class="light-teal-bg pt-24 pb-10 md:pt-32 md:pb-16 px-4 md:px-6 relative overflow-hidden">
             <div class="container mx-auto max-w-7xl relative z-10">
-                <div class="text-center">
-                    <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Expert <span class="bg-gradient-to-r from-teal-500 to-green-400 bg-clip-text text-transparent">Doctors</span></h1>
-                    <p class="text-sm md:text-base text-teal-700 mb-4">Choose from our network of verified healthcare professionals</p>
-                    <div class="flex items-center justify-center space-x-2">
-                        <i class="fas fa-user-md text-xl text-teal-500"></i>
-                        <span class="text-lg font-bold text-gray-900" id="doctor-count">0</span>
-                        <span class="text-sm text-gray-700">Doctors Available</span>
+                <div class="text-center max-w-2xl mx-auto">
+                    <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">Our Expert <span class="bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent">Doctors</span></h1>
+                    <p class="text-xs sm:text-sm md:text-base text-teal-700 mb-3 font-medium">Choose from our network of verified healthcare professionals</p>
+                    <div class="inline-flex items-center justify-center space-x-2 bg-white/80 backdrop-blur-md px-4 py-1.5 rounded-full border border-teal-200/60 shadow-sm">
+                        <i class="fas fa-user-md text-teal-600 text-sm"></i>
+                        <span class="text-xs sm:text-sm font-bold text-gray-900" id="doctor-count">0</span>
+                        <span class="text-xs text-gray-600 font-medium">Doctors Available</span>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- Search & Filter Section -->
-        <section class="py-4 px-6 bg-white/80 shadow-md rounded-2xl max-w-5xl mx-auto -mt-12 relative z-20 backdrop-blur-md border border-white/30">
+        <section class="py-4 px-4 sm:px-6 bg-white/95 shadow-xl rounded-2xl max-w-5xl mx-3 sm:mx-auto -mt-6 md:-mt-8 relative z-20 backdrop-blur-md border border-teal-100">
             <div class="container mx-auto">
                 <div class="flex flex-col gap-4">
                     <!-- Search and City Filter Row -->
