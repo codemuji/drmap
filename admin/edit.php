@@ -763,39 +763,6 @@ $statusOptions = [
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-900 mb-2">WhatsApp Number</label>
-                                <input type="tel" name="whatsapp" value="<?php echo htmlspecialchars($doctor['whatsapp']); ?>"
-                                       class="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl input-premium" placeholder="+1 (555) 123-4567">
-                            </div>
-                        </div>
-
-                         <?php
-                         $locsDec = json_decode($doctor['locations'] ?? '[]', true);
-                         $loc1_addr = $locsDec[0]['address'] ?? '';
-                         $loc1_lat = $locsDec[0]['lat'] ?? '';
-                         $loc1_lng = $locsDec[0]['lng'] ?? '';
-                         <div>
-                             <label class="block text-sm font-semibold text-slate-900 mb-2">Practice City</label>
-                             <?php
-                             $citiesStmt = $pdo->query("SELECT name FROM cities ORDER BY name ASC");
-                             $allCities = $citiesStmt->fetchAll(PDO::FETCH_COLUMN);
-                             if (empty($allCities)) {
-                                 $allCities = ['Guwahati', 'Tezpur', 'Kolkata', 'Delhi', 'Dibrugarh'];
-                             }
-                             $currCity = $doctor['practice_city'] ?? 'Guwahati';
-                             ?>
-                             <select name="practice_city" id="practice_city" 
-                                     class="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl input-premium text-slate-800 font-medium">
-                                 <?php foreach ($allCities as $cityName): ?>
-                                     <option value="<?php echo htmlspecialchars($cityName); ?>" <?php echo $cityName === $currCity ? 'selected' : ''; ?>>
-                                         <?php echo htmlspecialchars($cityName); ?>
-                                     </option>
-                                 <?php endforeach; ?>
-                             </select>
-                         </div>
-
-                        <!-- Hospital / Clinic Associations -->
-                        <div>
-                             <label class="block text-sm font-semibold text-slate-900 mb-2">Hospital / Clinic Associations</label>
                              <div class="space-y-2 border border-slate-200 rounded-xl p-4 bg-slate-50 max-h-48 overflow-y-auto">
                                  <?php
                                  $currHospStmt = $pdo->prepare('SELECT hospital_id FROM doctor_hospital WHERE doctor_id = ?');
