@@ -773,38 +773,6 @@ $statusOptions = [
                          $loc1_addr = $locsDec[0]['address'] ?? '';
                          $loc1_lat = $locsDec[0]['lat'] ?? '';
                          $loc1_lng = $locsDec[0]['lng'] ?? '';
-
-                         $loc2_addr = $locsDec[1]['address'] ?? '';
-                         $loc2_lat = $locsDec[1]['lat'] ?? '';
-                         $loc2_lng = $locsDec[1]['lng'] ?? '';
-                         ?>
-                         <!-- Structured Locations Panel (Req 32) -->
-                         <div>
-                             <label class="block text-sm font-semibold text-slate-900 mb-2">Practice Locations (Max 2)</label>
-                             <div class="space-y-4 p-4 border border-slate-200 rounded-xl bg-slate-50">
-                                 <div>
-                                     <span class="text-xs font-bold uppercase text-slate-500 block mb-1">Location 1</span>
-                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                         <input type="text" name="location1_address" id="location1_address" value="<?php echo htmlspecialchars($loc1_addr); ?>" placeholder="Address 1 (e.g. Guwahati Metro Hospital)" class="md:col-span-2 px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white font-medium focus:outline-none focus:border-teal-500">
-                                         <div class="flex gap-1">
-                                             <input type="text" name="location1_lat" id="location1_lat" value="<?php echo htmlspecialchars($loc1_lat); ?>" placeholder="Latitude" class="w-1/2 px-2 py-2 border border-slate-200 rounded-lg text-xs bg-white text-center font-medium focus:outline-none focus:border-teal-500">
-                                             <input type="text" name="location1_lng" id="location1_lng" value="<?php echo htmlspecialchars($loc1_lng); ?>" placeholder="Longitude" class="w-1/2 px-2 py-2 border border-slate-200 rounded-lg text-xs bg-white text-center font-medium focus:outline-none focus:border-teal-500">
-                                         </div>
-                                     </div>
-                                 </div>
-                                 <div class="border-t border-slate-200 pt-3">
-                                     <span class="text-xs font-bold uppercase text-slate-500 block mb-1">Location 2 (Optional)</span>
-                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                         <input type="text" name="location2_address" id="location2_address" value="<?php echo htmlspecialchars($loc2_addr); ?>" placeholder="Address 2 (e.g. City Dental Clinic)" class="md:col-span-2 px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white font-medium focus:outline-none focus:border-teal-500">
-                                         <div class="flex gap-1">
-                                             <input type="text" name="location2_lat" id="location2_lat" value="<?php echo htmlspecialchars($loc2_lat); ?>" placeholder="Latitude" class="w-1/2 px-2 py-2 border border-slate-200 rounded-lg text-xs bg-white text-center font-medium focus:outline-none focus:border-teal-500">
-                                             <input type="text" name="location2_lng" id="location2_lng" value="<?php echo htmlspecialchars($loc2_lng); ?>" placeholder="Longitude" class="w-1/2 px-2 py-2 border border-slate-200 rounded-lg text-xs bg-white text-center font-medium focus:outline-none focus:border-teal-500">
-                                         </div>
-                                     </div>
-                                 </div>
-                             </div>
-                         </div>
-
                          <div>
                              <label class="block text-sm font-semibold text-slate-900 mb-2">Practice City</label>
                              <?php
@@ -1381,8 +1349,87 @@ function addReviewRow(name='', rating=5, comment='', date=''){
         bindRemove(row.querySelector('.remove-btn'));
     }
 }
+}
 document.getElementById('addReview')?.addEventListener('click', ()=> addReviewRow());
 
+</script>
+
+<!-- Map Picker Modal -->
+<div id="mapPickerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div class="bg-white rounded-2xl w-full max-w-4xl h-[70vh] overflow-hidden flex flex-col shadow-2xl">
+        <div class="flex items-center justify-between p-4 border-b sticky top-0 bg-white z-10">
+            <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-map-location-dot text-teal-600"></i> Pick location on map</h3>
+            <div class="flex items-center gap-2">
+                <button type="button" id="mapPickerCancel" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-semibold text-sm hover:bg-slate-200 transition">Cancel</button>
+                <button type="button" id="mapPickerConfirm" class="px-5 py-2 rounded-xl btn-primary text-white font-semibold text-sm shadow-md">Use Selected Location</button>
+            </div>
+        </div>
+        <div id="mapPickerContainer" class="flex-1 w-full h-full"></div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+let mapPicker, mapPickerMarker, mapPickerTargetLat, mapPickerTargetLng;
+
+function initMapPicker(){
+    const container = document.getElementById('mapPickerContainer');
+    if (!container || typeof L === 'undefined') return;
+    if (!mapPicker) {
+        mapPicker = L.map(container).setView([26.1445, 91.7362], 12); // Default to Assam / Guwahati center
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(mapPicker);
+
+        mapPicker.on('click', function(e){
+            const lat = e.latlng.lat; const lng = e.latlng.lng;
+            if (!mapPickerMarker) mapPickerMarker = L.marker([lat,lng]).addTo(mapPicker);
+            else mapPickerMarker.setLatLng([lat,lng]);
+        });
+    }
+}
+
+function openMapPicker(latInput, lngInput){
+    const modal = document.getElementById('mapPickerModal');
+    mapPickerTargetLat = latInput;
+    mapPickerTargetLng = lngInput;
+    modal.classList.remove('hidden');
+    
+    setTimeout(()=>{
+        initMapPicker();
+        if (mapPicker) mapPicker.invalidateSize();
+        const lat = parseFloat(latInput.value) || null;
+        const lng = parseFloat(lngInput.value) || null;
+        if (lat !== null && !Number.isNaN(lat) && lng !== null && !Number.isNaN(lng)){
+            const pos = [lat,lng];
+            mapPicker.setView(pos, 14);
+            if (!mapPickerMarker) mapPickerMarker = L.marker(pos).addTo(mapPicker);
+            else mapPickerMarker.setLatLng(pos);
+        } else {
+            if (mapPicker) mapPicker.setView([26.1445, 91.7362], 12);
+            if (mapPickerMarker) { mapPickerMarker.remove(); mapPickerMarker = null; }
+        }
+    }, 200);
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+    const modal = document.getElementById('mapPickerModal');
+    document.getElementById('mapPickerCancel')?.addEventListener('click', ()=> modal.classList.add('hidden'));
+    document.getElementById('mapPickerConfirm')?.addEventListener('click', ()=>{
+        if (!mapPickerTargetLat || !mapPickerTargetLng) { modal.classList.add('hidden'); return; }
+        if (mapPickerMarker) {
+            const latlng = mapPickerMarker.getLatLng();
+            mapPickerTargetLat.value = latlng.lat.toFixed(6);
+            mapPickerTargetLng.value = latlng.lng.toFixed(6);
+        } else if (mapPicker) {
+            const c = mapPicker.getCenter();
+            mapPickerTargetLat.value = c.lat.toFixed(6);
+            mapPickerTargetLng.value = c.lng.toFixed(6);
+        }
+        modal.classList.add('hidden');
+    });
+});
 </script>
 
 </body>

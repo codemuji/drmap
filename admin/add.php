@@ -742,7 +742,12 @@ $defaultPhoto = 'https://ui-avatars.com/api/?name=New+Doctor&background=0ea5e9&c
                                     </label>
                                     <div class="space-y-4 p-4 border border-dark-100 rounded-xl bg-dark-50">
                                         <div>
-                                            <span class="text-xs font-bold uppercase text-dark-500 block mb-1">Location 1</span>
+                                            <div class="flex items-center justify-between mb-1.5">
+                                                <span class="text-xs font-bold uppercase text-dark-500 block">Location 1</span>
+                                                <button type="button" onclick="openMapPicker(document.getElementById('location1_lat'), document.getElementById('location1_lng'))" class="px-2.5 py-1 text-xs bg-teal-100 text-teal-800 font-semibold rounded-lg hover:bg-teal-200 transition flex items-center gap-1">
+                                                    <i class="fa-solid fa-map-location-dot"></i> Pick on Map
+                                                </button>
+                                            </div>
                                             <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                                                 <input type="text" name="location1_address" id="location1_address" placeholder="Address 1 (e.g. Guwahati Metro Hospital)" class="md:col-span-2 px-3 py-2 border border-dark-200 rounded-lg text-sm bg-white font-medium focus:outline-none focus:border-teal-500">
                                                 <div class="flex gap-1">
@@ -752,7 +757,12 @@ $defaultPhoto = 'https://ui-avatars.com/api/?name=New+Doctor&background=0ea5e9&c
                                             </div>
                                         </div>
                                         <div class="border-t border-dark-100 pt-3">
-                                            <span class="text-xs font-bold uppercase text-dark-500 block mb-1">Location 2 (Optional)</span>
+                                            <div class="flex items-center justify-between mb-1.5">
+                                                <span class="text-xs font-bold uppercase text-dark-500 block">Location 2 (Optional)</span>
+                                                <button type="button" onclick="openMapPicker(document.getElementById('location2_lat'), document.getElementById('location2_lng'))" class="px-2.5 py-1 text-xs bg-teal-100 text-teal-800 font-semibold rounded-lg hover:bg-teal-200 transition flex items-center gap-1">
+                                                    <i class="fa-solid fa-map-location-dot"></i> Pick on Map
+                                                </button>
+                                            </div>
                                             <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                                                 <input type="text" name="location2_address" id="location2_address" placeholder="Address 2 (e.g. City Dental Clinic)" class="md:col-span-2 px-3 py-2 border border-dark-200 rounded-lg text-sm bg-white font-medium focus:outline-none focus:border-teal-500">
                                                 <div class="flex gap-1">
@@ -1071,6 +1081,85 @@ $defaultPhoto = 'https://ui-avatars.com/api/?name=New+Doctor&background=0ea5e9&c
                 alert('Error generating bio text.');
             });
     }
+</script>
+
+<!-- Map Picker Modal -->
+<div id="mapPickerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div class="bg-white rounded-2xl w-full max-w-4xl h-[70vh] overflow-hidden flex flex-col shadow-2xl">
+        <div class="flex items-center justify-between p-4 border-b sticky top-0 bg-white z-10">
+            <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-map-location-dot text-teal-600"></i> Pick location on map</h3>
+            <div class="flex items-center gap-2">
+                <button type="button" id="mapPickerCancel" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-semibold text-sm hover:bg-slate-200 transition">Cancel</button>
+                <button type="button" id="mapPickerConfirm" class="px-5 py-2 rounded-xl btn-primary text-white font-semibold text-sm shadow-md">Use Selected Location</button>
+            </div>
+        </div>
+        <div id="mapPickerContainer" class="flex-1 w-full h-full"></div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+let mapPicker, mapPickerMarker, mapPickerTargetLat, mapPickerTargetLng;
+
+function initMapPicker(){
+    const container = document.getElementById('mapPickerContainer');
+    if (!container || typeof L === 'undefined') return;
+    if (!mapPicker) {
+        mapPicker = L.map(container).setView([26.1445, 91.7362], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(mapPicker);
+
+        mapPicker.on('click', function(e){
+            const lat = e.latlng.lat; const lng = e.latlng.lng;
+            if (!mapPickerMarker) mapPickerMarker = L.marker([lat,lng]).addTo(mapPicker);
+            else mapPickerMarker.setLatLng([lat,lng]);
+        });
+    }
+}
+
+function openMapPicker(latInput, lngInput){
+    const modal = document.getElementById('mapPickerModal');
+    mapPickerTargetLat = latInput;
+    mapPickerTargetLng = lngInput;
+    modal.classList.remove('hidden');
+    
+    setTimeout(()=>{
+        initMapPicker();
+        if (mapPicker) mapPicker.invalidateSize();
+        const lat = parseFloat(latInput.value) || null;
+        const lng = parseFloat(lngInput.value) || null;
+        if (lat !== null && !Number.isNaN(lat) && lng !== null && !Number.isNaN(lng)){
+            const pos = [lat,lng];
+            mapPicker.setView(pos, 14);
+            if (!mapPickerMarker) mapPickerMarker = L.marker(pos).addTo(mapPicker);
+            else mapPickerMarker.setLatLng(pos);
+        } else {
+            if (mapPicker) mapPicker.setView([26.1445, 91.7362], 12);
+            if (mapPickerMarker) { mapPickerMarker.remove(); mapPickerMarker = null; }
+        }
+    }, 200);
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+    const modal = document.getElementById('mapPickerModal');
+    document.getElementById('mapPickerCancel')?.addEventListener('click', ()=> modal.classList.add('hidden'));
+    document.getElementById('mapPickerConfirm')?.addEventListener('click', ()=>{
+        if (!mapPickerTargetLat || !mapPickerTargetLng) { modal.classList.add('hidden'); return; }
+        if (mapPickerMarker) {
+            const latlng = mapPickerMarker.getLatLng();
+            mapPickerTargetLat.value = latlng.lat.toFixed(6);
+            mapPickerTargetLng.value = latlng.lng.toFixed(6);
+        } else if (mapPicker) {
+            const c = mapPicker.getCenter();
+            mapPickerTargetLat.value = c.lat.toFixed(6);
+            mapPickerTargetLng.value = c.lng.toFixed(6);
+        }
+        modal.classList.add('hidden');
+    });
+});
 </script>
 </body>
 </html>

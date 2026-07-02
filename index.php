@@ -235,63 +235,146 @@ try {
       </nav>
     </header>
 
-    <!-- Hero Section -->
+    <!-- Medical Professional Hero Section -->
     <section
       id="home"
-      class="pt-32 pb-16 px-4 md:px-6 relative overflow-hidden"
+      class="pt-32 pb-20 px-4 md:px-6 relative overflow-hidden"
       style="
-        background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 25%, #99f6e4 50%, #5eead4 75%, #2dd4bf 100%);
+        background: linear-gradient(135deg, #0f172a 0%, #0f2942 40%, #0d4b56 100%);
         position: relative;
       "
     >
-      <!-- Decorative animated shapes -->
+      <!-- Background Medical Glowing Effects -->
       <div class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute top-20 left-10 w-72 h-72 bg-teal-300/30 rounded-full blur-3xl animate-pulse"></div>
-        <div class="absolute bottom-20 right-10 w-96 h-96 bg-cyan-300/30 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-200/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+        <div class="absolute top-10 left-10 w-96 h-96 bg-teal-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-10 right-10 w-[500px] h-[500px] bg-cyan-500/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
       </div>
       
       <div class="container mx-auto max-w-7xl relative z-10">
-        <div class="grid md:grid-cols-2 gap-12 items-center min-h-[500px] md:min-h-[600px]">
-          <!-- Left Column: Main Heading and Paragraph -->
-          <div class="fade-in-up">
-            <div class="max-w-3xl">
-              <h1
-                class="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight"
-              >
-                Talk to Doctors <br /><span
-                  class="bg-gradient-to-r from-teal-500 via-teal-400 to-green-400 bg-clip-text text-transparent animate-pulse-gradient"
-                  >Personally</span
-                >
+        <div class="grid lg:grid-cols-12 gap-12 items-center min-h-[520px]">
+          
+          <!-- Left 7 Cols: Main Headline + Quick Search Bar -->
+          <div class="lg:col-span-7 space-y-8 fade-in-up">
+            <div>
+              <div class="inline-flex items-center space-x-2 bg-teal-500/10 border border-teal-400/30 text-teal-300 px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider mb-4">
+                <i class="fas fa-stethoscope text-teal-400"></i>
+                <span>Trusted Healthcare Network</span>
+              </div>
+              <h1 class="text-4xl md:text-6xl font-extrabold text-white leading-tight">
+                Find & Consult <br />
+                <span class="bg-gradient-to-r from-teal-300 via-emerald-300 to-cyan-300 bg-clip-text text-transparent">
+                  Top Doctor Specialists
+                </span> Near You
               </h1>
-              <p class="text-lg text-gray-700 mb-8 max-w-xl">
-                Connect with verified healthcare professionals from the comfort
-                of your home. Get expert medical advice, personalized
-                consultations, and quality care at your fingertips.
+              <p class="text-base md:text-lg text-slate-300 mt-4 max-w-xl leading-relaxed">
+                Connect directly with certified medical experts across Assam & India. Browse verified timings, clinic locations, and patient reviews.
               </p>
-              <!-- CTA Button Group -->
-              <div class="pt-2">
-                <a
-                  href="doctors.php"
-                  class="inline-flex items-center justify-center space-x-3 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white px-8 py-4 rounded-2xl shadow-xl border border-white/20 transition-all duration-300 hover:shadow-2xl hover:shadow-teal-500/50 hover:scale-105 active:scale-95 font-bold text-lg group"
-                >
-                  <span>Explore Doctors</span>
-                  <i
-                    class="fas fa-arrow-right text-base group-hover:translate-x-2 transition duration-300"
-                  ></i>
-                </a>
-                <p class="text-sm text-gray-600 mt-4">
-                  ✓ No sign-up required • Browse all doctors instantly
-                </p>
+            </div>
+
+            <!-- Quick Search Widget Box -->
+            <div class="bg-white/10 backdrop-blur-md p-4 md:p-5 rounded-2xl border border-white/20 shadow-2xl">
+              <form action="doctors.php" method="GET" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                
+                <!-- Specialty Dropdown -->
+                <div class="relative">
+                  <div class="absolute left-3.5 top-1/2 -translate-y-1/2 text-teal-500">
+                    <i class="fas fa-user-md"></i>
+                  </div>
+                  <select name="specialty" class="w-full pl-10 pr-4 py-3 bg-white text-slate-800 rounded-xl font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 appearance-none shadow-sm">
+                    <option value="">All Specialties</option>
+                    <?php foreach ($specialtiesList as $spec): ?>
+                      <option value="<?php echo htmlspecialchars($spec['name']); ?>">
+                        <?php echo htmlspecialchars($spec['name']); ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+
+                <!-- City Dropdown -->
+                <?php
+                $cityListStmt = $pdo->query("SELECT name FROM cities ORDER BY name ASC");
+                $searchCities = $cityListStmt->fetchAll(PDO::FETCH_COLUMN);
+                ?>
+                <div class="relative">
+                  <div class="absolute left-3.5 top-1/2 -translate-y-1/2 text-teal-500">
+                    <i class="fas fa-location-dot"></i>
+                  </div>
+                  <select name="city" class="w-full pl-10 pr-4 py-3 bg-white text-slate-800 rounded-xl font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 appearance-none shadow-sm">
+                    <option value="">All Cities</option>
+                    <?php foreach ($searchCities as $cName): ?>
+                      <option value="<?php echo htmlspecialchars($cName); ?>">
+                        <?php echo htmlspecialchars($cName); ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="w-full bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all duration-300 hover:shadow-teal-500/50 flex items-center justify-center space-x-2">
+                  <i class="fas fa-search"></i>
+                  <span>Find Doctors</span>
+                </button>
+              </form>
+            </div>
+
+            <!-- Trust Badges Strip -->
+            <div class="flex flex-wrap items-center gap-6 text-slate-300 text-xs md:text-sm font-medium pt-2">
+              <div class="flex items-center space-x-2">
+                <i class="fas fa-check-circle text-teal-400 text-base"></i>
+                <span>Verified Doctors</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <i class="fas fa-clock text-teal-400 text-base"></i>
+                <span>Real-time Slot Schedules</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <i class="fas fa-map-marked-alt text-teal-400 text-base"></i>
+                <span>GPS Clinic Navigation</span>
               </div>
             </div>
           </div>
 
-          
+          <!-- Right 5 Cols: Medical Graphic Illustration + Pill Badges -->
+          <div class="lg:col-span-5 relative fade-in-up delay-100 hidden lg:block">
+            <div class="relative mx-auto max-w-md">
+              <!-- Glow Aura -->
+              <div class="absolute inset-0 bg-gradient-to-tr from-teal-400 to-cyan-500 rounded-3xl blur-2xl opacity-40"></div>
+              
+              <!-- Medical Hero Image Frame -->
+              <div class="relative bg-gradient-to-b from-teal-800/60 to-slate-900/80 rounded-3xl p-3 border border-white/20 shadow-2xl overflow-hidden">
+                <img
+                  src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=600&h=700&fit=crop"
+                  alt="Medical Specialist DrMap"
+                  class="w-full h-auto rounded-2xl object-cover"
+                />
+
+                <!-- Floating Doctor Badge 1 -->
+                <div class="absolute top-6 left-6 bg-slate-900/90 backdrop-blur-md border border-white/20 text-white p-3.5 rounded-2xl shadow-xl flex items-center space-x-3">
+                  <div class="w-10 h-10 rounded-xl bg-teal-500 text-white flex items-center justify-center font-bold">
+                    <i class="fas fa-user-shield"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-bold text-teal-300">Verified & Approved</div>
+                    <div class="text-[11px] text-slate-300">100% Certified Doctors</div>
+                  </div>
+                </div>
+
+                <!-- Floating Doctor Badge 2 -->
+                <div class="absolute bottom-6 right-6 bg-slate-900/90 backdrop-blur-md border border-white/20 text-white p-3.5 rounded-2xl shadow-xl flex items-center space-x-3">
+                  <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold">
+                    <i class="fas fa-heart-pulse"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-bold text-emerald-300">Quick Appointment</div>
+                    <div class="text-[11px] text-slate-300">No Waiting Time</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
-
-      
     </section>
 
     <!-- About Section -->
@@ -552,23 +635,30 @@ try {
           </p>
         </div>
 
-        <!-- Specialties Fixed Block Grid (Req 17 & 26 & 32) -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5 px-2">
+        <!-- Specialties Fixed Block Grid (Accurate Icons & High Contrast) -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 px-2">
           <?php 
           foreach ($specialtiesList as $index => $spec): 
             $specName = $spec['name'];
             $icon = $spec['icon'] ?: 'fa-user-doctor';
+            // ensure class prefix
+            if (!str_contains($icon, 'fa-')) {
+                $icon = 'fa-' . $icon;
+            }
             $encodedSpecialty = urlencode($specName);
           ?>
           <a href="doctors.php?specialty=<?php echo $encodedSpecialty; ?>" class="group">
-            <div class="relative bg-white/80 backdrop-blur-md rounded-2xl p-5 shadow-sm border border-teal-50 hover:border-teal-300 hover:shadow-xl hover:shadow-teal-500/5 transition-all duration-300 group-hover:scale-105 transform text-center cursor-pointer h-full flex flex-col justify-between">
+            <div class="relative bg-slate-50 hover:bg-teal-600 rounded-2xl p-6 shadow-sm border border-slate-200 hover:border-teal-600 hover:shadow-2xl transition-all duration-300 group-hover:-translate-y-1 transform text-center cursor-pointer h-full flex flex-col items-center justify-between">
               <div>
-                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 text-white flex items-center justify-center mx-auto mb-3 shadow-md group-hover:rotate-6 transition duration-300">
-                  <i class="fas <?php echo htmlspecialchars($icon); ?> text-xl"></i>
+                <!-- Large High-Contrast Icon Circle -->
+                <div class="w-16 h-16 rounded-2xl bg-teal-500 group-hover:bg-white text-white group-hover:text-teal-600 flex items-center justify-center mx-auto mb-4 shadow-md transition duration-300">
+                  <i class="fa-solid <?php echo htmlspecialchars($icon); ?> text-2xl"></i>
                 </div>
-                <h3 class="text-xs font-bold text-gray-800 mb-1 line-clamp-2"><?php echo htmlspecialchars($specName); ?></h3>
+                <h3 class="text-sm md:text-base font-extrabold text-slate-900 group-hover:text-white mb-1 transition-colors leading-snug"><?php echo htmlspecialchars($specName); ?></h3>
               </div>
-              <p class="text-[10px] text-gray-400 mt-2 font-medium">Find active specialists</p>
+              <span class="text-xs font-semibold text-teal-600 group-hover:text-teal-100 mt-3 flex items-center justify-center gap-1">
+                <span>Browse</span> <i class="fas fa-arrow-right text-[10px]"></i>
+              </span>
             </div>
           </a>
           <?php endforeach; ?>
