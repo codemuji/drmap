@@ -464,11 +464,11 @@ try {
                             &copy; 2026 DrMap. All rights reserved. Made with <i class="fas fa-heart text-teal-400 mx-1"></i> for better healthcare.
                         </p>
                         <div class="flex items-center space-x-6 text-sm">
-                            <a href="#" class="text-gray-400 hover:text-teal-400 transition duration-300">Privacy Policy</a>
+                            <a href="privacy-policy.php" class="text-gray-400 hover:text-teal-400 transition duration-300">Privacy Policy</a>
                             <span class="text-gray-600">•</span>
-                            <a href="#" class="text-gray-400 hover:text-teal-400 transition duration-300">Terms of Service</a>
+                            <a href="terms-of-service.php" class="text-gray-400 hover:text-teal-400 transition duration-300">Terms of Service</a>
                             <span class="text-gray-600">•</span>
-                            <a href="#" class="text-gray-400 hover:text-teal-400 transition duration-300">Cookie Policy</a>
+                            <a href="cookie-policy.php" class="text-gray-400 hover:text-teal-400 transition duration-300">Cookie Policy</a>
                         </div>
                     </div>
                 </div>
