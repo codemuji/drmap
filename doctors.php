@@ -7,8 +7,15 @@ $stmt = $pdo->prepare('SELECT * FROM doctors WHERE status = "active" ORDER BY IF
 $stmt->execute();
 $dbDoctors = $stmt->fetchAll();
 
-// Build list of distinct practice cities for frontend filter
-$allCities = [];
+// Fetch all registered practice cities from cities database table for frontend filter
+try {
+    $citiesStmt = $pdo->query('SELECT name FROM cities ORDER BY name ASC');
+    $allCities = $citiesStmt->fetchAll(PDO::FETCH_COLUMN);
+} catch (PDOException $e) {
+    $allCities = [];
+}
+
+// Also include any distinct practice_city assigned to active doctors
 foreach ($dbDoctors as $d) {
     $city = trim($d['practice_city'] ?? '');
     if ($city !== '' && !in_array($city, $allCities)) $allCities[] = $city;
