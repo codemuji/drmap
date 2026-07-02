@@ -176,7 +176,18 @@ try {
         <!-- Search & Filter Section -->
         <section class="py-4 px-4 sm:px-6 bg-white/95 shadow-xl rounded-2xl max-w-5xl mx-3 sm:mx-auto -mt-6 md:-mt-8 relative z-20 backdrop-blur-md border border-teal-100">
             <div class="container mx-auto">
-                <div class="flex flex-col gap-4">
+                <div class="flex flex-col gap-3">
+                    <!-- Geolocation Badge & Status -->
+                    <div id="geo-location-badge" class="hidden items-center justify-between bg-teal-50/90 border border-teal-200/80 px-3.5 py-2 rounded-xl text-xs text-teal-800 font-medium">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-location-dot text-teal-600"></i>
+                            <span id="geo-status-text">Detecting your location...</span>
+                        </div>
+                        <button type="button" onclick="requestUserLocation(true)" class="text-[11px] font-bold text-teal-700 hover:text-teal-900 underline">
+                            Refresh Location
+                        </button>
+                    </div>
+
                     <!-- Search and City Filter Row -->
                     <div class="flex flex-col md:flex-row gap-3 items-center">
                         <div class="w-full md:flex-1">
@@ -185,13 +196,16 @@ try {
                                 <i class="fas fa-search absolute left-3 top-2.5 text-teal-400 text-sm"></i>
                             </div>
                         </div>
-                        <div class="w-full md:w-48">
-                            <select id="city-filter" class="form-input w-full px-4 py-2 text-sm rounded-full border-2 border-teal-200 focus:border-teal-500 focus:outline-none shadow-sm">
+                        <div class="w-full md:w-auto flex gap-2 items-center">
+                            <select id="city-filter" class="form-input flex-1 md:w-48 px-4 py-2 text-sm rounded-full border-2 border-teal-200 focus:border-teal-500 focus:outline-none shadow-sm">
                                 <option value="all">All Cities</option>
                                 <?php foreach ($allCities as $c): ?>
                                 <option value="<?php echo htmlspecialchars($c); ?>"><?php echo htmlspecialchars($c); ?></option>
                                 <?php endforeach; ?>
                             </select>
+                            <button type="button" id="locate-me-btn" onclick="requestUserLocation(true)" title="Auto-detect my location" class="w-9 h-9 rounded-full bg-teal-50 border-2 border-teal-200 text-teal-600 hover:bg-teal-600 hover:text-white flex items-center justify-center transition shadow-sm shrink-0">
+                                <i class="fas fa-crosshairs text-sm"></i>
+                            </button>
                         </div>
                     </div>
                     
@@ -472,6 +486,7 @@ try {
         // Create database doctors array from PHP
             const databaseDoctors = <?php 
             $doctorsForJS = array_map(function($doctor) {
+                $locsDec = json_decode($doctor['locations'] ?? '[]', true);
                 return [
                     'id' => (int)$doctor['id'],
                     'name' => $doctor['name'],
@@ -483,7 +498,8 @@ try {
                     'phone' => $doctor['phone'],
                     'email' => $doctor['email'],
                     'practice_city' => $doctor['practice_city'] ?? '',
-                    'reviews' => []  // Will be populated from DB later if needed
+                    'locations' => is_array($locsDec) ? $locsDec : [],
+                    'reviews' => []
                 ];
             }, $dbDoctors);
             echo json_encode($doctorsForJS);
@@ -587,6 +603,113 @@ try {
             window.location.href = `doctor-profile.php?id=${doctorId}`;
         }
 
+        // ============================================
+        // GEOLOCATION TRACKING & DISTANCE CALCULATION
+        // ============================================
+        let userCoords = null;
+
+        function getDistanceKm(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius of Earth in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function getMinDoctorDistance(doctor, uLat, uLng) {
+            if (!doctor.locations || !Array.isArray(doctor.locations) || doctor.locations.length === 0) {
+                return 99999;
+            }
+            let minD = 99999;
+            doctor.locations.forEach(loc => {
+                const dLat = parseFloat(loc.lat);
+                const dLng = parseFloat(loc.lng);
+                if (!isNaN(dLat) && !isNaN(dLng)) {
+                    const dist = getDistanceKm(uLat, uLng, dLat, dLng);
+                    if (dist < minD) minD = dist;
+                }
+            });
+            return minD;
+        }
+
+        // Request Browser Location Permission & Track Coords
+        function requestUserLocation(userTriggered = false) {
+            const badge = document.getElementById('geo-location-badge');
+            const statusText = document.getElementById('geo-status-text');
+
+            if (!navigator.geolocation) {
+                if (userTriggered) alert('Geolocation is not supported by your browser.');
+                return;
+            }
+
+            if (badge && statusText) {
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
+                statusText.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Requesting location permission...';
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    userCoords = { lat, lng };
+
+                    // Reverse geocode via OpenStreetMap Nominatim to find city
+                    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+                        .then(res => res.json())
+                        .then(data => {
+                            const addr = data.address || {};
+                            const detectedCity = addr.city || addr.town || addr.village || addr.county || addr.state_district || '';
+                            
+                            let matchedCity = '';
+                            if (detectedCity && cityFilter) {
+                                for (let option of cityFilter.options) {
+                                    if (option.value.toLowerCase() === detectedCity.toLowerCase() || 
+                                        detectedCity.toLowerCase().includes(option.value.toLowerCase()) || 
+                                        option.value.toLowerCase().includes(detectedCity.toLowerCase())) {
+                                        matchedCity = option.value;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (matchedCity) {
+                                cityFilter.value = matchedCity;
+                                if (statusText) {
+                                    statusText.innerHTML = `📍 <strong>Auto-detected city:</strong> ${matchedCity} — Filtered nearby doctors`;
+                                }
+                            } else {
+                                if (statusText) {
+                                    statusText.innerHTML = `📍 <strong>Current Location:</strong> ${detectedCity || 'Coordinates acquired'} — Sorting doctors by closest GPS distance`;
+                                }
+                            }
+
+                            filterDoctors();
+                        })
+                        .catch(() => {
+                            if (statusText) {
+                                statusText.innerHTML = `📍 <strong>Location Acquired:</strong> (${lat.toFixed(4)}, ${lng.toFixed(4)}) — Sorting doctors by distance`;
+                            }
+                            filterDoctors();
+                        });
+                },
+                (error) => {
+                    console.warn('Geolocation permission error:', error.message);
+                    if (statusText) {
+                        if (error.code === error.PERMISSION_DENIED) {
+                            statusText.innerHTML = '⚠️ Location permission denied. Select your city manually above.';
+                        } else {
+                            statusText.innerHTML = '⚠️ Location unavailable. Select your city manually above.';
+                        }
+                    }
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+            );
+        }
+
         // Search functionality
         const searchInput = document.getElementById('search-input');
         const cityFilter = document.getElementById('city-filter');
@@ -607,6 +730,15 @@ try {
 
                 return matchesSearch && matchesSpecialty && matchesCity;
             });
+
+            // If user coordinates available, sort doctors by closest GPS distance
+            if (userCoords) {
+                filteredDoctors.sort((a, b) => {
+                    const distA = getMinDoctorDistance(a, userCoords.lat, userCoords.lng);
+                    const distB = getMinDoctorDistance(b, userCoords.lat, userCoords.lng);
+                    return distA - distB;
+                });
+            }
             
             renderDoctors(filteredDoctors);
         }
@@ -688,44 +820,10 @@ try {
             });
         }
 
-        // Detect city from client IP (Req 26)
-        function detectUserCity() {
-            fetch('https://ipapi.co/json/')
-                .then(res => res.json())
-                .then(data => {
-                    const detectedCity = data.city || 'Guwahati';
-                    console.log('Detected city:', detectedCity);
-                    
-                    if (cityFilter) {
-                        let matchFound = false;
-                        for (let option of cityFilter.options) {
-                            if (option.value.toLowerCase() === detectedCity.toLowerCase()) {
-                                cityFilter.value = option.value;
-                                matchFound = true;
-                                break;
-                            }
-                        }
-                        if (matchFound) {
-                            filterDoctors();
-                        }
-                    }
-                })
-                .catch(err => {
-                    console.warn('Reverse geocoding failed or blocked. Defaulting to Guwahati.');
-                    if (cityFilter) {
-                        for (let option of cityFilter.options) {
-                            if (option.value.toLowerCase() === 'guwahati') {
-                                cityFilter.value = option.value;
-                                filterDoctors();
-                                break;
-                            }
-                        }
-                    }
-                });
-        }
-
-        // Run city detection on load
-        detectUserCity();
+        // Trigger user location permission prompt automatically on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            requestUserLocation(false);
+        });
 
         // Scroll to top when clicking doctor cards
         window.viewProfile = viewProfile;
