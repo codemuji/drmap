@@ -641,8 +641,8 @@ try {
           foreach ($specialtiesList as $index => $spec): 
             $specName = $spec['name'];
             $icon = $spec['icon'] ?: 'fa-user-doctor';
-            // ensure class prefix
-            if (!str_contains($icon, 'fa-')) {
+            $isImage = str_contains($icon, '/') || str_contains($icon, '.') || preg_match('/\.(png|jpg|jpeg|svg|webp|gif)$/i', $icon);
+            if (!$isImage && !str_contains($icon, 'fa-')) {
                 $icon = 'fa-' . $icon;
             }
             $encodedSpecialty = urlencode($specName);
@@ -651,8 +651,12 @@ try {
             <div class="relative bg-slate-50 hover:bg-teal-600 rounded-2xl p-6 shadow-sm border border-slate-200 hover:border-teal-600 hover:shadow-2xl transition-all duration-300 group-hover:-translate-y-1 transform text-center cursor-pointer h-full flex flex-col items-center justify-between">
               <div>
                 <!-- Large High-Contrast Icon Circle -->
-                <div class="w-16 h-16 rounded-2xl bg-teal-500 group-hover:bg-white text-white group-hover:text-teal-600 flex items-center justify-center mx-auto mb-4 shadow-md transition duration-300">
-                  <i class="fa-solid <?php echo htmlspecialchars($icon); ?> text-2xl"></i>
+                <div class="w-16 h-16 rounded-2xl bg-teal-500 group-hover:bg-white text-white group-hover:text-teal-600 flex items-center justify-center mx-auto mb-4 shadow-md transition duration-300 p-2">
+                  <?php if ($isImage): ?>
+                    <img src="<?php echo htmlspecialchars($icon); ?>" alt="<?php echo htmlspecialchars($specName); ?>" class="w-10 h-10 object-contain filter drop-shadow">
+                  <?php else: ?>
+                    <i class="fa-solid <?php echo htmlspecialchars($icon); ?> text-2xl"></i>
+                  <?php endif; ?>
                 </div>
                 <h3 class="text-sm md:text-base font-extrabold text-slate-900 group-hover:text-white mb-1 transition-colors leading-snug"><?php echo htmlspecialchars($specName); ?></h3>
               </div>
