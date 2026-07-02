@@ -397,37 +397,30 @@ try {
                         </ul>
                     </div>
 
-                    <!-- Specialties -->
+                    <!-- Specialties in 2 columns -->
                     <div>
                         <h4 class="text-lg font-bold mb-6 flex items-center">
                             <span class="w-1 h-6 bg-gradient-to-b from-teal-400 to-cyan-400 rounded-full mr-3"></span>
-                            Top Specialties
+                            Specialties
                         </h4>
-                        <ul class="space-y-3">
+                        <ul class="grid grid-cols-2 gap-x-4 gap-y-2.5 text-xs sm:text-sm">
+                            <?php foreach ($specialtiesList as $spec): 
+                                $specName = $spec['name'];
+                                $icon = $spec['icon'] ?: 'fa-user-doctor';
+                                $isImg = str_contains($icon, '/') || str_contains($icon, '.') || preg_match('/\.(png|jpg|jpeg|svg|webp|gif)$/i', $icon);
+                                if (!$isImg && !str_contains($icon, 'fa-')) $icon = 'fa-' . $icon;
+                            ?>
                             <li>
-                                <a href="doctors.php" class="text-gray-300 hover:text-teal-400 transition duration-300 flex items-center group">
-                                    <i class="fas fa-heart-pulse text-teal-500 mr-2 text-xs group-hover:scale-110 transition-transform"></i>
-                                    Cardiology
+                                <a href="doctors.php?specialty=<?php echo urlencode($specName); ?>" class="text-gray-300 hover:text-teal-400 transition duration-300 flex items-center group truncate" title="<?php echo htmlspecialchars($specName); ?>">
+                                    <?php if ($isImg): ?>
+                                        <img src="<?php echo htmlspecialchars($icon); ?>" alt="icon" class="w-3.5 h-3.5 object-contain mr-2 shrink-0">
+                                    <?php else: ?>
+                                        <i class="fa-solid <?php echo htmlspecialchars($icon); ?> text-teal-400 mr-2 text-[11px] shrink-0 group-hover:scale-110 transition-transform"></i>
+                                    <?php endif; ?>
+                                    <span class="truncate"><?php echo htmlspecialchars($specName); ?></span>
                                 </a>
                             </li>
-                            <li>
-                                <a href="doctors.php" class="text-gray-300 hover:text-teal-400 transition duration-300 flex items-center group">
-                                    <i class="fas fa-bone text-teal-500 mr-2 text-xs group-hover:scale-110 transition-transform"></i>
-                                    Orthopedics
-                                </a>
-                            </li>
-                            <li>
-                                <a href="doctors.php" class="text-gray-300 hover:text-teal-400 transition duration-300 flex items-center group">
-                                    <i class="fas fa-baby text-teal-500 mr-2 text-xs group-hover:scale-110 transition-transform"></i>
-                                    Pediatrics
-                                </a>
-                            </li>
-                            <li>
-                                <a href="doctors.php" class="text-gray-300 hover:text-teal-400 transition duration-300 flex items-center group">
-                                    <i class="fas fa-brain text-teal-500 mr-2 text-xs group-hover:scale-110 transition-transform"></i>
-                                    Neurology
-                                </a>
-                            </li>
+                            <?php endforeach; ?>
                         </ul>
                     </div>
 
