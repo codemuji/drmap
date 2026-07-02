@@ -159,10 +159,10 @@ try {
         </header>
 
         <!-- Hero Section -->
-        <section class="light-teal-bg pt-24 pb-10 md:pt-32 md:pb-16 px-4 md:px-6 relative overflow-hidden">
+        <section class="light-teal-bg pt-28 pb-10 md:pt-32 md:pb-16 px-4 md:px-6 relative overflow-hidden">
             <div class="container mx-auto max-w-7xl relative z-10">
                 <div class="text-center max-w-2xl mx-auto">
-                    <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">Our Expert <span class="bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent">Doctors</span></h1>
+                    <h1 class="mt-2 text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">Our Expert <span class="bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent">Doctors</span></h1>
                     <p class="text-xs sm:text-sm md:text-base text-teal-700 mb-3 font-medium">Choose from our network of verified healthcare professionals</p>
                     <div class="inline-flex items-center justify-center space-x-2 bg-white/80 backdrop-blur-md px-4 py-1.5 rounded-full border border-teal-200/60 shadow-sm">
                         <i class="fas fa-user-md text-teal-600 text-sm"></i>
