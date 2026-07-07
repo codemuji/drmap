@@ -155,6 +155,11 @@ try {
               >Doctors</a
             >
             <a
+              href="hospitals.php"
+              class="px-4 py-2 text-gray-700 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition duration-300 text-sm font-medium"
+              >Hospitals</a
+            >
+            <a
               href="#services"
               class="px-4 py-2 text-gray-700 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition duration-300 text-sm font-medium"
               >Features</a
@@ -214,6 +219,11 @@ try {
             href="doctors.php"
             class="block px-4 py-3 text-gray-700 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition duration-300 text-sm font-medium"
             >Doctors</a
+          >
+          <a
+            href="hospitals.php"
+            class="block px-4 py-3 text-gray-700 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition duration-300 text-sm font-medium"
+            >Hospitals</a
           >
           <a
             href="#services"

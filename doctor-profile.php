@@ -384,6 +384,7 @@ $doctorRating = floatval($doctor['rating']);
         .modal-backdrop {
             background: rgba(15, 23, 42, 0.7);
             backdrop-filter: blur(8px);
+            z-index: 99999 !important;
         }
         
         /* Stat Card Gradient Borders */
@@ -1102,8 +1103,8 @@ $doctorRating = floatval($doctor['rating']);
     </section>
 
     <!-- Gallery Section (Req 9 - Swapped Gallery to Top) -->
-    <section id="gallery-section" class="py-16 md:py-24 px-4 bg-gradient-to-b from-slate-50 to-white relative">
-        <div class="container mx-auto max-w-6xl">
+    <section id="gallery-section" class="py-16 md:py-24 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden">
+        <div class="container mx-auto max-w-6xl px-4">
             <div class="section-header">
                 <span class="section-badge">
                     <i class="fas fa-images"></i>
@@ -1112,29 +1113,50 @@ $doctorRating = floatval($doctor['rating']);
                 <h2 class="section-title">Clinic Gallery</h2>
                 <p class="section-subtitle">Explore our modern facilities and professional workspace</p>
             </div>
-            
-            <div class="relative">
-                <!-- Carousel Container -->
-                <div id="gallery-carousel" class="carousel-container rounded-2xl">
-                    <div id="gallery-carousel-inner" class="carousel-track gap-6">
-                        <!-- Gallery slides inserted by JS -->
-                    </div>
-                </div>
-                
-                <!-- Navigation -->
-                <button id="galleryPrevBtn" onclick="prevGallery()" class="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white shadow-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:text-primary-600 hover:border-primary-300 transition-all hover:shadow-xl">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <button id="galleryNextBtn" onclick="nextGallery()" class="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white shadow-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:text-primary-600 hover:border-primary-300 transition-all hover:shadow-xl">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-                
-                <!-- Dots -->
-                <div id="gallery-carousel-dots" class="flex justify-center gap-2 mt-6">
-                    <!-- Dots inserted by JS -->
-                </div>
+        </div>
+
+        <!-- Full-width marquee strip (no max-width constraint) -->
+        <div class="relative w-full gallery-marquee-container" style="margin-top:2rem;">
+            <!-- Left fade -->
+            <div class="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-slate-50 to-transparent pointer-events-none z-10"></div>
+            <!-- Right fade -->
+            <div class="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-white to-transparent pointer-events-none z-10"></div>
+
+            <div class="flex gap-5 whitespace-nowrap overflow-hidden gallery-marquee-wrapper">
+                <!-- First strip -->
+                <div id="gallery-marquee-strip-1" class="flex gap-5 shrink-0 gallery-marquee-scroll"></div>
+                <!-- Duplicate strip for seamless loop -->
+                <div id="gallery-marquee-strip-2" class="flex gap-5 shrink-0 gallery-marquee-scroll" aria-hidden="true"></div>
             </div>
         </div>
+
+        <style>
+            @keyframes gallery-marquee {
+                0%   { transform: translateX(0); }
+                100% { transform: translateX(calc(-100% - 20px)); }
+            }
+            .gallery-marquee-scroll {
+                animation: gallery-marquee 30s linear infinite;
+            }
+            .gallery-marquee-container:hover .gallery-marquee-scroll {
+                animation-play-state: paused;
+            }
+            .gallery-marquee-img {
+                width: 320px;
+                height: 220px;
+                object-fit: cover;
+                border-radius: 1rem;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+                transition: transform 0.4s ease, box-shadow 0.4s ease;
+                cursor: pointer;
+                flex-shrink: 0;
+                display: block;
+            }
+            .gallery-marquee-img:hover {
+                transform: scale(1.04);
+                box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            }
+        </style>
     </section>
 
     <!-- Videos Section (Req 9 - Swapped Videos to Bottom) -->
@@ -1486,7 +1508,7 @@ $doctorRating = floatval($doctor['rating']);
     </footer>
 
     <!-- Booking Modal -->
-    <div id="bookingModal" class="hidden fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4">
+    <div id="bookingModal" class="hidden fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4" style="z-index: 99999 !important;">
         <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in max-h-[90vh] overflow-y-auto">
             <!-- Header -->
             <div class="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-5 flex items-center justify-between">
@@ -2315,23 +2337,26 @@ $doctorRating = floatval($doctor['rating']);
                 document.getElementById('videos-section').style.display = 'none';
             }
             
-            // Gallery
+            // Gallery — continuous marquee strip
             if (doctor.gallery && doctor.gallery.length > 0) {
-                const galleryCarouselInner = document.getElementById('gallery-carousel-inner');
-                
-                doctor.gallery.forEach((img, index) => {
-                    const src = normalizeImagePath(img);
-                    const card = document.createElement('div');
-                    card.className = 'carousel-slide w-full md:w-[400px]';
-                    card.innerHTML = `
-                        <div class="card overflow-hidden">
-                            <img src="${src}" alt="Gallery ${index + 1}" class="w-full h-72 md:h-80 object-cover hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.src='https://via.placeholder.com/800x600?text=Image'" />
-                        </div>
-                    `;
-                    galleryCarouselInner.appendChild(card);
+                const strip1 = document.getElementById('gallery-marquee-strip-1');
+                const strip2 = document.getElementById('gallery-marquee-strip-2');
+
+                function makeGalleryImg(src, index) {
+                    const img = document.createElement('img');
+                    img.src = normalizeImagePath(src);
+                    img.alt = 'Gallery ' + (index + 1);
+                    img.className = 'gallery-marquee-img';
+                    img.loading = 'lazy';
+                    img.onerror = function() { this.src = 'https://via.placeholder.com/320x220?text=Image'; };
+                    img.addEventListener('click', () => openGalleryLightbox(normalizeImagePath(src)));
+                    return img;
+                }
+
+                doctor.gallery.forEach((img, i) => {
+                    strip1.appendChild(makeGalleryImg(img, i));
+                    strip2.appendChild(makeGalleryImg(img, i));
                 });
-                
-                setTimeout(setupGalleryCarousel, 100);
             } else {
                 document.getElementById('gallery-section').style.display = 'none';
             }
@@ -2526,94 +2551,32 @@ $doctorRating = floatval($doctor['rating']);
         }
 
         // Gallery Carousel
-        function setupGalleryCarousel() {
-            updateGalleryCarouselPosition();
-            startGalleryAutoPlay();
-        }
-
-        function updateGalleryCarouselPosition() {
-            const carousel = document.getElementById('gallery-carousel-inner');
-            const container = document.getElementById('gallery-carousel');
-            if (!carousel || !container) return;
-            
-            const slides = carousel.querySelectorAll('.carousel-slide');
-            if (slides.length === 0) return;
-            
-            const gap = 24;
-            const slideWidth = slides[0].getBoundingClientRect().width;
-            const containerWidth = container.offsetWidth;
-            const visibleCount = Math.max(1, Math.floor(containerWidth / (slideWidth + gap)));
-            const maxIndex = Math.max(0, slides.length - visibleCount);
-
-            galleryCurrentIndex = Math.min(galleryCurrentIndex, maxIndex);
-            galleryCurrentIndex = Math.max(0, galleryCurrentIndex);
-
-            const totalScrollWidth = carousel.scrollWidth;
-            const desiredOffset = galleryCurrentIndex * (slideWidth + gap);
-            const maxOffset = Math.max(0, totalScrollWidth - containerWidth);
-            const offset = Math.min(desiredOffset, maxOffset);
-
-            carousel.style.transform = `translateX(-${offset}px)`;
-        }
-
-        function nextGallery() {
-            const carousel = document.getElementById('gallery-carousel-inner');
-            const container = document.getElementById('gallery-carousel');
-            if (!carousel || !container) return;
-            
-            const slides = carousel.querySelectorAll('.carousel-slide');
-            const gap = 24;
-            const slideWidth = slides[0]?.getBoundingClientRect().width || 400;
-            const containerWidth = container.offsetWidth;
-            const visibleCount = Math.max(1, Math.floor(containerWidth / (slideWidth + gap)));
-            const maxIndex = Math.max(0, slides.length - visibleCount);
-            
-            const shift = Math.max(1, visibleCount);
-            const lastIndex = Math.max(0, slides.length - 1);
-
-            if (galleryCurrentIndex < maxIndex) {
-                galleryCurrentIndex = Math.min(maxIndex, galleryCurrentIndex + shift);
-            } else if (galleryCurrentIndex < lastIndex && maxIndex === 0) {
-                galleryCurrentIndex = Math.min(lastIndex, galleryCurrentIndex + 1);
-            } else {
-                galleryCurrentIndex = 0;
+        // Gallery lightbox — opens on image click in the marquee strip
+        function openGalleryLightbox(src) {
+            let overlay = document.getElementById('gallery-lightbox');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'gallery-lightbox';
+                overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+                overlay.innerHTML = `
+                    <img id="gallery-lightbox-img" style="max-width:90vw;max-height:90vh;border-radius:1rem;box-shadow:0 24px 80px rgba(0,0,0,0.6);object-fit:contain;" />
+                    <button onclick="document.getElementById('gallery-lightbox').remove()" style="position:absolute;top:1.5rem;right:1.5rem;background:rgba(255,255,255,0.15);border:none;color:white;width:3rem;height:3rem;border-radius:50%;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">&times;</button>
+                `;
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === overlay) overlay.remove();
+                });
+                document.body.appendChild(overlay);
             }
-            
-            updateGalleryCarouselPosition();
-            resetGalleryAutoPlay();
+            document.getElementById('gallery-lightbox-img').src = src;
+            overlay.style.display = 'flex';
         }
 
-        function prevGallery() {
-            const carousel = document.getElementById('gallery-carousel-inner');
-            const slides = carousel?.querySelectorAll('.carousel-slide');
-            const maxIndex = slides ? Math.max(0, slides.length - 1) : 0;
-            
-            const carouselEl = document.getElementById('gallery-carousel');
-            const gap = 24;
-            const cardWidth = carouselEl ? (carouselEl.querySelector('.carousel-slide')?.getBoundingClientRect().width || (window.innerWidth >= 768 ? 384 : window.innerWidth - 32)) : (window.innerWidth >= 768 ? 384 : window.innerWidth - 32);
-            const containerWidth = carouselEl ? carouselEl.offsetWidth : window.innerWidth;
-            const visibleCountPrev = Math.max(1, Math.floor(containerWidth / (cardWidth + gap)));
-            const shiftPrev = Math.max(1, visibleCountPrev);
-
-            if (galleryCurrentIndex > 0) {
-                galleryCurrentIndex = Math.max(0, galleryCurrentIndex - shiftPrev);
-            } else {
-                galleryCurrentIndex = maxIndex;
-            }
-            
-            updateGalleryCarouselPosition();
-            resetGalleryAutoPlay();
-        }
-
-        function startGalleryAutoPlay() {
-            clearInterval(galleryAutoPlayInterval);
-            galleryAutoPlayInterval = setInterval(nextGallery, 6000);
-        }
-
-        function resetGalleryAutoPlay() {
-            clearInterval(galleryAutoPlayInterval);
-            startGalleryAutoPlay();
-        }
+        // Stub functions kept for backward-compat (no longer used)
+        function setupGalleryCarousel() {}
+        function nextGallery() {}
+        function prevGallery() {}
+        function startGalleryAutoPlay() {}
+        function resetGalleryAutoPlay() {}
 
         // Resize handler
         window.addEventListener('resize', () => {

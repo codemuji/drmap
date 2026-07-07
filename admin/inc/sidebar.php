@@ -147,6 +147,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline:2px solid #
 /* Prevent horizontal overflow and ensure main scrolls vertically */
 html, body { max-width:100%; overflow-x:hidden; }
 main { min-height:100vh; overflow-y:auto; -webkit-overflow-scrolling: touch; box-sizing: border-box; }
+@media (min-width:1024px) { main { margin-left:280px; } }
 
 /* Make modal responsive on very small viewports */
 .modal-content { max-width: calc(100% - 48px); width:100%; }

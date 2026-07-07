@@ -137,7 +137,7 @@ $curatedIcons = [
 <div class="flex min-h-screen">
     <?php include __DIR__ . '/inc/sidebar.php'; ?>
 
-    <main class="flex-1 lg:ml-[280px]">
+    <main style="margin-left:280px;min-width:0;overflow-x:hidden;flex:1;">
         <header class="sticky top-0 z-40 glass border-b border-white/50">
             <div class="px-6 lg:px-8 py-4">
                 <div class="flex items-center justify-between">

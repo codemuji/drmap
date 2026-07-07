@@ -133,6 +133,7 @@ try {
                     <div class="hidden lg:flex items-center space-x-1">
                         <a href="index.php" class="px-4 py-2 text-gray-700 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition duration-300 text-sm font-medium">Home</a>
                         <a href="doctors.php" class="px-4 py-2 text-teal-600 font-bold bg-teal-50 rounded-lg transition duration-300 text-sm">Doctors</a>
+                        <a href="hospitals.php" class="px-4 py-2 text-gray-700 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition duration-300 text-sm font-medium">Hospitals</a>
                         <a href="index.php#contact" class="px-4 py-2 text-gray-700 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition duration-300 text-sm font-medium">Contact</a>
                     </div>
                     <!-- CTA Button + Mobile Menu Toggle (Req 11) -->
@@ -160,6 +161,7 @@ try {
                 <div id="mobile-menu" class="hidden lg:hidden mt-4 pt-4 pb-2 border-t border-teal-100/30">
                     <a href="index.php" class="block px-4 py-3 text-gray-700 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition duration-300 text-sm font-medium">Home</a>
                     <a href="doctors.php" class="block px-4 py-3 text-teal-600 font-bold bg-teal-50 rounded-lg transition duration-300 text-sm">Doctors</a>
+                    <a href="hospitals.php" class="block px-4 py-3 text-gray-700 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition duration-300 text-sm font-medium">Hospitals</a>
                     <a href="index.php#contact" class="block px-4 py-3 text-gray-700 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition duration-300 text-sm font-medium">Contact</a>
                 </div>
             </nav>

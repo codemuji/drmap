@@ -736,8 +736,13 @@ $statusOptions = [
                         </div>
 
                         <div>
-                            <label class="block text-sm font-semibold text-slate-900 mb-2">Professional Quote / Motto</label>
-                            <input type="text" name="speech" value="<?php echo htmlspecialchars($doctor['speech']); ?>"
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="block text-sm font-semibold text-slate-900">Professional Quote / Motto</label>
+                                <button type="button" onclick="generateBio('speech', 'motto')" class="text-xs bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-purple-600"></i> Write Motto with AI
+                                </button>
+                            </div>
+                            <input type="text" name="speech" id="speech" value="<?php echo htmlspecialchars($doctor['speech']); ?>"
                                    class="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl input-premium" 
                                    placeholder="e.g., 'I believe in providing compassionate, patient-centered care.'">
                         </div>
@@ -763,30 +768,89 @@ $statusOptions = [
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-900 mb-2">WhatsApp Number</label>
-                             <div class="space-y-2 border border-slate-200 rounded-xl p-4 bg-slate-50 max-h-48 overflow-y-auto">
-                                 <?php
-                                 $currHospStmt = $pdo->prepare('SELECT hospital_id FROM doctor_hospital WHERE doctor_id = ?');
-                                 $currHospStmt->execute([$doctor_id]);
-                                 $currHospitals = $currHospStmt->fetchAll(PDO::FETCH_COLUMN);
+                                <input type="tel" name="whatsapp" value="<?php echo htmlspecialchars($doctor['whatsapp'] ?? ''); ?>"
+                                       class="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl input-premium" placeholder="+1 (555) 123-4567">
+                            </div>
+                        </div>
 
-                                 $hospStmt = $pdo->query("SELECT id, name, city FROM hospitals ORDER BY name ASC");
-                                 $allHospitals = $hospStmt->fetchAll(PDO::FETCH_ASSOC);
-                                 
-                                 if (count($allHospitals) === 0):
-                                 ?>
-                                     <p class="text-xs text-slate-400">No partner hospitals registered yet.</p>
-                                 <?php else: ?>
-                                     <?php foreach ($allHospitals as $hosp): ?>
-                                         <label class="flex items-center space-x-3 cursor-pointer p-1 hover:bg-white rounded-lg transition">
-                                             <input type="checkbox" name="hospitals[]" value="<?php echo $hosp['id']; ?>" 
-                                                    class="w-4 h-4 text-teal-600 border-slate-300 rounded focus:ring-teal-500"
-                                                    <?php echo in_array($hosp['id'], $currHospitals) ? 'checked' : ''; ?>>
-                                             <span class="text-xs font-semibold text-dark-800"><?php echo htmlspecialchars($hosp['name']); ?> <span class="text-[10px] text-dark-400">(<?php echo htmlspecialchars($hosp['city']); ?>)</span></span>
-                                         </label>
-                                     <?php endforeach; ?>
-                                 <?php endif; ?>
-                             </div>
-                             <p class="text-xs text-slate-500 mt-2">Check the hospitals/clinics where this doctor is practicing</p>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-900 mb-2">Practice City</label>
+                            <input type="text" name="practice_city" id="practice_city" value="<?php echo htmlspecialchars($doctor['practice_city'] ?? ''); ?>"
+                                   class="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl input-premium" placeholder="e.g., Guwahati">
+                            <p class="text-xs text-slate-500 mt-2">City where doctor is currently practicing</p>
+                        </div>
+
+                        <!-- Structured Locations Panel (Req 32) -->
+                        <?php
+                        $locsDecoded = json_decode($doctor['locations'] ?? '[]', true);
+                        if (!is_array($locsDecoded)) $locsDecoded = [];
+                        $loc1 = $locsDecoded[0] ?? ['address' => '', 'lat' => '', 'lng' => ''];
+                        $loc2 = $locsDecoded[1] ?? ['address' => '', 'lat' => '', 'lng' => ''];
+                        ?>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-900 mb-2">
+                                <i class="fa-solid fa-map-location-dot mr-2 text-teal-600"></i>Multiple Practice Locations (Max 2)
+                            </label>
+                            <div class="space-y-4 p-4 border border-slate-200 rounded-xl bg-slate-50">
+                                <div>
+                                    <div class="flex items-center justify-between mb-1.5">
+                                        <span class="text-xs font-bold uppercase text-slate-600 block">Location 1</span>
+                                        <button type="button" onclick="openMapPicker(document.getElementById('location1_lat'), document.getElementById('location1_lng'))" class="px-2.5 py-1 text-xs bg-teal-100 text-teal-800 font-semibold rounded-lg hover:bg-teal-200 transition flex items-center gap-1">
+                                            <i class="fa-solid fa-map-location-dot"></i> Pick on Map
+                                        </button>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                        <input type="text" name="location1_address" id="location1_address" value="<?php echo htmlspecialchars($loc1['address'] ?? ''); ?>" placeholder="Address 1 (e.g. Guwahati Metro Hospital)" class="md:col-span-2 px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white font-medium focus:outline-none focus:border-teal-500">
+                                        <div class="flex gap-1">
+                                            <input type="text" name="location1_lat" id="location1_lat" value="<?php echo htmlspecialchars($loc1['lat'] ?? ''); ?>" placeholder="Latitude" class="w-1/2 px-2 py-2 border border-slate-200 rounded-lg text-xs bg-white text-center font-medium focus:outline-none focus:border-teal-500">
+                                            <input type="text" name="location1_lng" id="location1_lng" value="<?php echo htmlspecialchars($loc1['lng'] ?? ''); ?>" placeholder="Longitude" class="w-1/2 px-2 py-2 border border-slate-200 rounded-lg text-xs bg-white text-center font-medium focus:outline-none focus:border-teal-500">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="border-t border-slate-200 pt-3">
+                                    <div class="flex items-center justify-between mb-1.5">
+                                        <span class="text-xs font-bold uppercase text-slate-600 block">Location 2 (Optional)</span>
+                                        <button type="button" onclick="openMapPicker(document.getElementById('location2_lat'), document.getElementById('location2_lng'))" class="px-2.5 py-1 text-xs bg-teal-100 text-teal-800 font-semibold rounded-lg hover:bg-teal-200 transition flex items-center gap-1">
+                                            <i class="fa-solid fa-map-location-dot"></i> Pick on Map
+                                        </button>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                        <input type="text" name="location2_address" id="location2_address" value="<?php echo htmlspecialchars($loc2['address'] ?? ''); ?>" placeholder="Address 2 (e.g. City Dental Clinic)" class="md:col-span-2 px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white font-medium focus:outline-none focus:border-teal-500">
+                                        <div class="flex gap-1">
+                                            <input type="text" name="location2_lat" id="location2_lat" value="<?php echo htmlspecialchars($loc2['lat'] ?? ''); ?>" placeholder="Latitude" class="w-1/2 px-2 py-2 border border-slate-200 rounded-lg text-xs bg-white text-center font-medium focus:outline-none focus:border-teal-500">
+                                            <input type="text" name="location2_lng" id="location2_lng" value="<?php echo htmlspecialchars($loc2['lng'] ?? ''); ?>" placeholder="Longitude" class="w-1/2 px-2 py-2 border border-slate-200 rounded-lg text-xs bg-white text-center font-medium focus:outline-none focus:border-teal-500">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-900 mb-2">Hospital / Clinic Associations</label>
+                            <div class="space-y-2 border border-slate-200 rounded-xl p-4 bg-slate-50 max-h-48 overflow-y-auto">
+                                <?php
+                                $currHospStmt = $pdo->prepare('SELECT hospital_id FROM doctor_hospital WHERE doctor_id = ?');
+                                $currHospStmt->execute([$doctor_id]);
+                                $currHospitals = $currHospStmt->fetchAll(PDO::FETCH_COLUMN);
+
+                                $hospStmt = $pdo->query("SELECT id, name, city FROM hospitals ORDER BY name ASC");
+                                $allHospitals = $hospStmt->fetchAll(PDO::FETCH_ASSOC);
+                                
+                                if (count($allHospitals) === 0):
+                                ?>
+                                    <p class="text-xs text-slate-400">No partner hospitals registered yet.</p>
+                                <?php else: ?>
+                                    <?php foreach ($allHospitals as $hosp): ?>
+                                        <label class="flex items-center space-x-3 cursor-pointer p-1 hover:bg-white rounded-lg transition">
+                                            <input type="checkbox" name="hospitals[]" value="<?php echo $hosp['id']; ?>" 
+                                                   class="w-4 h-4 text-teal-600 border-slate-300 rounded focus:ring-teal-500"
+                                                   <?php echo in_array($hosp['id'], $currHospitals) ? 'checked' : ''; ?>>
+                                            <span class="text-xs font-semibold text-dark-800"><?php echo htmlspecialchars($hosp['name']); ?> <span class="text-[10px] text-dark-400">(<?php echo htmlspecialchars($hosp['city']); ?>)</span></span>
+                                        </label>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-2">Check the hospitals/clinics where this doctor is practicing</p>
                         </div>
 
                         <div>
@@ -968,7 +1032,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     } catch (e) { console.error(e); }
 });
 
-function generateBio(textareaId) {
+function generateBio(textareaId, type = 'bio') {
     const name = document.querySelector('input[name="name"]').value.trim();
     const specialty = document.querySelector('input[name="specialty"]').value.trim();
     const qualification = document.querySelector('input[name="qualification"]').value.trim();
@@ -984,7 +1048,7 @@ function generateBio(textareaId) {
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Writing...';
     
-    fetch(`ai_write_bio.php?name=${encodeURIComponent(name)}&specialty=${encodeURIComponent(specialty)}&qualification=${encodeURIComponent(qualification)}&experience=${encodeURIComponent(experience)}`)
+    fetch(`ai_write_bio.php?name=${encodeURIComponent(name)}&specialty=${encodeURIComponent(specialty)}&qualification=${encodeURIComponent(qualification)}&experience=${encodeURIComponent(experience)}&type=${encodeURIComponent(type)}`)
         .then(res => res.json())
         .then(data => {
             btn.disabled = false;
@@ -998,7 +1062,7 @@ function generateBio(textareaId) {
         .catch(err => {
             btn.disabled = false;
             btn.innerHTML = origText;
-            alert('Error generating bio text.');
+            alert('Error generating text.');
         });
 }
 
@@ -1221,12 +1285,75 @@ function updatePhotoPreviewFromUrl(url){
 const photoUrlInputElm = document.getElementById('photoUrlInput');
 photoUrlInputElm?.addEventListener('input', (e)=> updatePhotoPreviewFromUrl(e.target.value));
 
+function parseLegacyTimingString(text) {
+    if (!text || typeof text !== 'string' || text.trim().startsWith('{')) return null;
+    const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+    const shortMap = {mon:'monday',tue:'tuesday',wed:'wednesday',thu:'thursday',fri:'friday',sat:'saturday',sun:'sunday'};
+    const result = {};
+    days.forEach(d => result[d] = { enabled: false, slots: [] });
+    
+    function convert12to24(str) {
+        if (!str) return '';
+        const s = str.trim().toLowerCase();
+        const m = s.match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/);
+        if (!m) return str.trim();
+        let h = parseInt(m[1], 10);
+        const min = m[2];
+        const period = m[3] || '';
+        if (period === 'pm' && h < 12) h += 12;
+        if (period === 'am' && h === 12) h = 0;
+        return `${String(h).padStart(2,'0')}:${min}`;
+    }
+
+    const parts = text.split(',');
+    parts.forEach(part => {
+        part = part.trim();
+        if (!part) return;
+        const colonIdx = part.indexOf(':');
+        if (colonIdx === -1) return;
+        const dayPart = part.substring(0, colonIdx).trim();
+        const timePart = part.substring(colonIdx + 1).trim();
+        const times = timePart.split(/[-–]/);
+        if (times.length < 2) return;
+        const open = convert12to24(times[0]);
+        const close = convert12to24(times[1]);
+        if (!open) return;
+
+        const dayRanges = dayPart.split('-');
+        if (dayRanges.length === 2) {
+            const sShort = dayRanges[0].trim().toLowerCase().substring(0, 3);
+            const eShort = dayRanges[1].trim().toLowerCase().substring(0, 3);
+            const sDay = shortMap[sShort];
+            const eDay = shortMap[eShort];
+            if (sDay && eDay) {
+                const sIdx = days.indexOf(sDay);
+                const eIdx = days.indexOf(eDay);
+                if (sIdx !== -1 && eIdx !== -1) {
+                    for (let i = sIdx; i <= eIdx; i++) {
+                        result[days[i]] = { enabled: true, slots: [{open, close}] };
+                    }
+                }
+            }
+        } else {
+            const sShort = dayPart.trim().toLowerCase().substring(0, 3);
+            const dName = shortMap[sShort];
+            if (dName) {
+                result[dName] = { enabled: true, slots: [{open, close}] };
+            }
+        }
+    });
+    return result;
+}
+
 function renderTiming(){
     const container = document.getElementById('timingWeek');
     if (!container) return;
     container.innerHTML = '';
     const raw = document.getElementById('hf_timing').value || '';
-    const data = parseJSONSafe(raw) || {};
+    let data = parseJSONSafe(raw);
+    if (!data || Object.keys(data).length === 0) {
+        data = parseLegacyTimingString(raw) || {};
+    }
     const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
     const labels = {monday:'Monday', tuesday:'Tuesday', wednesday:'Wednesday', thursday:'Thursday', friday:'Friday', saturday:'Saturday', sunday:'Sunday'};
 
@@ -1247,7 +1374,7 @@ function renderTiming(){
                     </div>
                 </div>
                 <div class="space-y-2 ranges-container" ${!enabled? 'style="display:none"':''}></div>
-                <button type="button" class="add-range-btn mt-2 text-sm text-blue-600 hover:underline ${!enabled? 'hidden':''}" style="${!enabled? 'display:none':''}">+ Add Time Range</button>
+                <button type="button" class="add-range-btn mt-2 text-sm text-blue-600 hover:underline" style="${!enabled? 'display:none':''}">+ Add Time Range</button>
             </div>
         `);
         container.appendChild(card);
@@ -1315,7 +1442,6 @@ function addReviewRow(name='', rating=5, comment='', date=''){
         container.appendChild(row);
         bindRemove(row.querySelector('.remove-btn'));
     }
-}
 }
 document.getElementById('addReview')?.addEventListener('click', ()=> addReviewRow());
 

@@ -202,6 +202,14 @@ $statusOptions = [
     'inactive' => ['label' => 'Inactive', 'color' => 'red', 'icon' => 'fa-circle-xmark']
 ];
 
+// Fetch dynamic cities from DB
+try {
+    $citiesStmt = $pdo->query('SELECT name FROM cities ORDER BY name ASC');
+    $allCities = $citiesStmt->fetchAll(PDO::FETCH_COLUMN);
+} catch (PDOException $e) {
+    $allCities = ['Guwahati', 'Tezpur', 'Kolkata', 'Delhi', 'Dibrugarh'];
+}
+
 // Default values for new doctor
 $defaultPhoto = 'https://ui-avatars.com/api/?name=New+Doctor&background=0ea5e9&color=fff&size=200';
 ?>
@@ -398,7 +406,7 @@ $defaultPhoto = 'https://ui-avatars.com/api/?name=New+Doctor&background=0ea5e9&c
     <?php include __DIR__ . '/inc/sidebar.php'; ?>
 
     <!-- Main Content -->
-    <main class="flex-1 lg:ml-[280px]">
+    <main style="margin-left:280px;min-width:0;overflow-x:hidden;flex:1;">
         <!-- Header -->
         <header class="glass sticky top-0 z-40 border-b border-white/50">
             <div class="px-6 lg:px-8 py-4">
@@ -534,7 +542,26 @@ $defaultPhoto = 'https://ui-avatars.com/api/?name=New+Doctor&background=0ea5e9&c
                                         </div>
                                     </div>
 
-                                    <!-- Experience -->
+                                     <!-- Practice City -->
+                                     <div class="input-group relative">
+                                         <div class="absolute left-4 top-1/2 -translate-y-1/2 text-dark-400 z-10">
+                                             <i class="fa-solid fa-city input-icon transition-colors"></i>
+                                         </div>
+                                         <select name="practice_city" id="practice_city" required
+                                                 class="w-full pl-12 pr-4 py-3.5 bg-dark-50 border-2 border-dark-200 rounded-xl input-premium text-dark-800 font-medium appearance-none cursor-pointer">
+                                             <option value="">Select Practice City</option>
+                                             <?php foreach ($allCities as $cityOpt): ?>
+                                             <option value="<?php echo htmlspecialchars($cityOpt); ?>">
+                                                 <?php echo htmlspecialchars($cityOpt); ?>
+                                             </option>
+                                             <?php endforeach; ?>
+                                         </select>
+                                         <div class="absolute right-4 top-1/2 -translate-y-1/2 text-dark-400 pointer-events-none">
+                                             <i class="fa-solid fa-chevron-down text-sm"></i>
+                                         </div>
+                                     </div>
+
+                                     <!-- Experience -->
                                     <div class="input-group relative">
                                         <div class="absolute left-4 top-1/2 -translate-y-1/2 text-dark-400 z-10">
                                             <i class="fa-solid fa-briefcase input-icon transition-colors"></i>
@@ -689,13 +716,20 @@ $defaultPhoto = 'https://ui-avatars.com/api/?name=New+Doctor&background=0ea5e9&c
                                 </div>
 
                                 <!-- Speech/Quote -->
-                                <div class="input-group relative">
-                                    <div class="absolute left-4 top-1/2 -translate-y-1/2 text-dark-400 z-10">
-                                        <i class="fa-solid fa-quote-left input-icon transition-colors"></i>
+                                <div>
+                                    <div class="input-group relative">
+                                        <div class="absolute left-4 top-1/2 -translate-y-1/2 text-dark-400 z-10">
+                                            <i class="fa-solid fa-quote-left input-icon transition-colors"></i>
+                                        </div>
+                                        <input type="text" name="speech" id="speech" placeholder=" " maxlength="200"
+                                               class="floating-input w-full pl-12 pr-4 py-3.5 bg-dark-50 border-2 border-dark-200 rounded-xl input-premium text-dark-800 font-medium">
+                                        <label class="floating-label">Professional Quote or Motto</label>
                                     </div>
-                                    <input type="text" name="speech" id="speech" placeholder=" " maxlength="200"
-                                           class="floating-input w-full pl-12 pr-4 py-3.5 bg-dark-50 border-2 border-dark-200 rounded-xl input-premium text-dark-800 font-medium">
-                                    <label class="floating-label">Professional Quote or Motto</label>
+                                    <div class="flex justify-between items-center mt-1">
+                                        <button type="button" onclick="generateBio('speech', 'motto')" class="text-xs bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all">
+                                            <i class="fa-solid fa-wand-magic-sparkles text-purple-600"></i> Write Motto with AI
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1047,7 +1081,7 @@ $defaultPhoto = 'https://ui-avatars.com/api/?name=New+Doctor&background=0ea5e9&c
     }
 
     // Offline AI Bio writer AJAX
-    function generateBio(textareaId) {
+    function generateBio(textareaId, type = 'bio') {
         const name = document.getElementById('name').value.trim();
         const specialty = document.getElementById('specialty').value;
         const qualification = document.getElementById('qualification').value.trim();
@@ -1063,7 +1097,7 @@ $defaultPhoto = 'https://ui-avatars.com/api/?name=New+Doctor&background=0ea5e9&c
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Writing...';
         
-        fetch(`ai_write_bio.php?name=${encodeURIComponent(name)}&specialty=${encodeURIComponent(specialty)}&qualification=${encodeURIComponent(qualification)}&experience=${encodeURIComponent(experience)}`)
+        fetch(`ai_write_bio.php?name=${encodeURIComponent(name)}&specialty=${encodeURIComponent(specialty)}&qualification=${encodeURIComponent(qualification)}&experience=${encodeURIComponent(experience)}&type=${encodeURIComponent(type)}`)
             .then(res => res.json())
             .then(data => {
                 btn.disabled = false;
@@ -1078,7 +1112,7 @@ $defaultPhoto = 'https://ui-avatars.com/api/?name=New+Doctor&background=0ea5e9&c
             .catch(err => {
                 btn.disabled = false;
                 btn.innerHTML = origText;
-                alert('Error generating bio text.');
+                alert('Error generating text.');
             });
     }
 </script>
