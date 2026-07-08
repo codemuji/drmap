@@ -1,0 +1,34 @@
+# ----------------------------------------------------------------------
+# Security: Protect Sensitive Files (.env, .git, .sql, .log, etc.)
+# ----------------------------------------------------------------------
+
+# 1. Disable directory browsing so users cannot list folder contents
+Options -Indexes
+
+# 2. Deny web access to dot-files (.env, .git, .gitignore, .htaccess)
+<FilesMatch "^\.(env|git|gitignore|htaccess|htpasswd|example)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# 3. Deny web access to database backups, log files, and scratch scripts
+<FilesMatch "\.(sql|log|ini|sh|bak|old|orig|save)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# 4. Protect internal directories from web access
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(scratch|sql|logs)/ - [F,L]
+</IfModule>

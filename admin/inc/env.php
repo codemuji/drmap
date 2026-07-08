@@ -1,9 +1,14 @@
 <?php
 // Simple environment variable loader for vanilla PHP
 function load_env() {
-    $envPath = dirname(__DIR__, 2) . '/.env';
+    // 1. First check one directory ABOVE the project root (e.g., /home/user/.env outside public_html on MilesWeb)
+    $envPath = dirname(__DIR__, 3) . '/.env';
     if (!file_exists($envPath)) {
-        return;
+        // 2. Fallback to project root
+        $envPath = dirname(__DIR__, 2) . '/.env';
+        if (!file_exists($envPath)) {
+            return;
+        }
     }
     
     $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
