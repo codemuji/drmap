@@ -47,7 +47,7 @@
                 <h4 class="text-lg font-bold mb-2">Follow Us</h4>
                 <div class="flex items-center space-x-3">
                     <a href="#" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white hover:scale-105 transition"><i class="fab fa-facebook"></i></a>
-                    <a href="#" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white hover:scale-105 transition"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white hover:scale-105 transition"><i class="fab fa-x-twitter"></i></a>
                     <a href="#" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white hover:scale-105 transition"><i class="fab fa-instagram"></i></a>
                     <a href="#" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white hover:scale-105 transition"><i class="fab fa-linkedin"></i></a>
                 </div>
